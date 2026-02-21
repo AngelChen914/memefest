@@ -1,0 +1,27 @@
+.decorations-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.deco-particle {
+  position: absolute;
+  animation: roam ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@keyframes roam {
+  0% {
+    transform: translate(0, 0) rotate(var(--r0));
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--r1));
+    opacity: 0.55;
+  }
+}

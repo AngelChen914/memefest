@@ -212,7 +212,7 @@ html {
   font-family: 'Zen Maru Gothic', sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
-  cursor: pointer;
+  cursor: url("./images/cursor-memefest.png") 0 0, auto;
   box-shadow: 0 6px 18px rgba(100,120,150,0.16);
   transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
@@ -266,7 +266,6 @@ html {
   font-family: 'Zen Maru Gothic', sans-serif;
   font-size: 0.95rem;
   font-weight: 500;
-  cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(180, 200, 220, 0.25);
 }

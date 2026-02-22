@@ -133,7 +133,3 @@ The app includes a simplified 2D physics system:
 ## License
 
 See [LICENSE](./LICENSE) file.
-
----
-
-=

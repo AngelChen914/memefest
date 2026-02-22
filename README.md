@@ -1,4 +1,4 @@
-# MemeFest 🎪
+# MemeFest 
 
 An interactive ocean-themed jar experience where clicking pops out memes from Imgflip. Drag memes to the trash logo to recycle them back into the jar's collection counter.
 
@@ -136,4 +136,4 @@ See [LICENSE](./LICENSE) file.
 
 ---
 
-**Made with ❤️ at HopperHacks**
+=

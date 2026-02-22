@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, createRef } from "react";
 import Decorations from "./Decorations";
+import CoverPage from "./components/CoverPage";
 import "./App.css";
 import { Seaweed, Coral, Shell, Fish, Jellyfish } from "./components/DecorElements";
 import OceanJar from "./components/OceanJar";
 
 export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('cover'); // 'cover' | 'game'
   const [wiggle, setWiggle] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [memes, setMemes] = useState([]);
@@ -213,6 +215,11 @@ export default function App() {
     setSixtySevenActive(false);
   };
 
+  const handleHome = () => {
+    handleReset();
+    setCurrentScreen('cover');
+  };
+
   useEffect(() => {
     const handleMouseUp = (e) => {
       if (!dragging) return;
@@ -255,11 +262,18 @@ export default function App() {
     return () => window.removeEventListener('mouseup', handleMouseUp);
   }, [dragging, draggingCharId, activeCharacters]);
 
+  // If on cover screen, show cover page
+  if (currentScreen === 'cover') {
+    return <CoverPage onPlayClick={() => setCurrentScreen('game')} />;
+  }
+
+  // Otherwise show game screen
   return (
     <div className="page">
       <div className="paper-texture" />
 
-      {/* reset button */}
+      {/* home and reset buttons */}
+      <button className="home-button" onClick={handleHome}>Home</button>
       <button className="reset-top" onClick={handleReset}>Reset</button>
 
       {/* logo */}

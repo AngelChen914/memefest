@@ -19,6 +19,8 @@ export default function App() {
   const [dragging, setDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [draggingCharId, setDraggingCharId] = useState(null);
+  const [isStopped, setIsStopped] = useState(false);
+  const [showStop, setShowStop] = useState(false);
   
   // Fetch memes from Imgflip API on mount
   useEffect(() => {
@@ -65,6 +67,17 @@ export default function App() {
     window.addEventListener("mousemove", handleMouseMoveGlobal);
     return () => window.removeEventListener("mousemove", handleMouseMoveGlobal);
   }, [dragging, dragOffset, draggingCharId, activeCharacters]);
+
+  // Check for 20 memes and stop functionality
+  useEffect(() => {
+    if (activeCharacters.length >= 20 && !showStop) {
+      setShowStop(true);
+      setIsStopped(true);
+    } else if (activeCharacters.length < 20 && showStop) {
+      setShowStop(false);
+      setIsStopped(false);
+    }
+  }, [activeCharacters.length, showStop]);
 
   // Physics effect for all active characters
   useEffect(() => {
@@ -204,6 +217,8 @@ export default function App() {
             delete charactersRef.current[idToRemove];
             setActiveCharacters((prev) => prev.filter((c) => c.id !== idToRemove));
             setClickCount((prev) => prev - 1);
+            setShowStop(false);
+            setIsStopped(false);
           }
         }
       } catch (err) {
@@ -308,7 +323,7 @@ export default function App() {
         <div className="title-block">
           <h1 className="main-title">MemeFest</h1>
         </div>
-        <div className="jar-container">
+        <div className="jar-container" style={{ position: 'relative' }}>
           <div
             className={`card 
               ${wiggle ? "wiggle" : ""} 
@@ -317,7 +332,7 @@ export default function App() {
             }
             onClick={() => {
               if (memes.length === 0) return; // Don't allow clicking if memes haven't loaded
-              if (clickCount >= 20) return;
+              if (isStopped) return; // Can't add more memes when stopped
               setWiggle(true);
               setJarOpening(true);
               setClickCount((prev) => prev + 1);
@@ -357,6 +372,21 @@ export default function App() {
           >
             <OceanJar count={clickCount} />
           </div>
+          {showStop && (
+            <img
+              src="./images/stop.png"
+              alt="Stop"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                zIndex: 100,
+              }}
+            />
+          )}
           <p className="card-hint">✦ click the jar to peek inside ✦</p>
         </div>
 

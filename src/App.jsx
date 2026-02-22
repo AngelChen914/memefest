@@ -6,7 +6,6 @@ import OceanJar from "./components/OceanJar";
 
 export default function App() {
   const [wiggle, setWiggle] = useState(false);
-  const [jarOpening, setJarOpening] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [memes, setMemes] = useState([]);
   const [bubbles, setBubbles] = useState([]);
@@ -325,11 +324,7 @@ export default function App() {
         </div>
         <div className="jar-container" style={{ position: 'relative' }}>
           <div
-            className={`card 
-              ${wiggle ? "wiggle" : ""} 
-              ${jarOpening ? "opening" : ""}
-              ${clickCount >= 20 ? "disabled" : ""}`
-            }
+            className={`card ${clickCount >= 20 ? "disabled" : ""}`}
             onClick={() => {
               if (memes.length === 0) return; // Don't allow clicking if memes haven't loaded
               if (isStopped) return; // Can't add more memes when stopped

@@ -58,8 +58,6 @@ function OceanJar({ count = 1 }) {
             <path d="M38 13 L46 6 L46 20 Z" fill="#b8c8ee" opacity="0.85" />
             <ellipse cx="22" cy="13" rx="22" ry="13" fill="#b8c8ee" opacity="0.88" />
             <ellipse cx="18" cy="10" rx="12" ry="6" fill="white" opacity="0.2" />
-            <polygon points="6,2 10,10 2,10"  fill="#a0b4e0" />
-            <polygon points="14,0 18,8 10,8"  fill="#a0b4e0" />
             <circle cx="10" cy="12" r="3"   fill="white" opacity="0.9" />
             <circle cx="9.5" cy="12" r="1.8" fill="#5060a0" opacity="0.8" />
             <circle cx="9" cy="11.5" r="0.7" fill="white" />
@@ -71,8 +69,6 @@ function OceanJar({ count = 1 }) {
             <path d="M38 11 L46 5 L46 17 Z" fill="#d4b8f0" opacity="0.85" />
             <ellipse cx="22" cy="11" rx="22" ry="12" fill="#d4b8f0" opacity="0.88" />
             <ellipse cx="18" cy="8"  rx="12" ry="6"  fill="white" opacity="0.2" />
-            <polygon points="6,1 10,9 2,9"   fill="#c0a0e0" />
-            <polygon points="14,-1 18,7 10,7" fill="#c0a0e0" />
             <circle cx="10" cy="10" r="3"   fill="white" opacity="0.9" />
             <circle cx="9.5" cy="10" r="1.8" fill="#6050a0" opacity="0.8" />
             <circle cx="9" cy="9.5" r="0.7"  fill="white" />

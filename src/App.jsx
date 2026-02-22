@@ -402,7 +402,12 @@ export default function App() {
               }}
             />
           )}
-          <p className="card-hint">✦ click the jar to peek inside ✦</p>
+          <p className="card-hint">✦ Click the jar to peek inside ✦</p>
+        </div>
+        <div>
+          {showStop && (
+            <p className="card-hint">Drag a meme to the teabag to toss it away or reset</p>
+          )}
         </div>
 
         {activeCharacters.map((char) => (

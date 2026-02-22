@@ -57,8 +57,9 @@ export default function App() {
 
       const bubble = {
         id: bubbleIdRef.current++,
-        x: e.clientX,
-        y: e.clientY + (Math.random() - 0.5) * 50,
+        x: e.clientX + (Math.random() - 0.5) * 30,
+        y: e.clientY - (Math.random() * 65),
+        size: 0.8 + Math.random() * 0.75,
       };
       setBubbles((prev) => [...prev, bubble]);
 
@@ -79,7 +80,7 @@ export default function App() {
 
     window.addEventListener("mousemove", handleMouseMoveGlobal);
     return () => window.removeEventListener("mousemove", handleMouseMoveGlobal);
-  }, [dragging, dragOffset, draggingCharId, activeCharacters]);
+  }, [dragging, dragOffset, draggingCharId]);
 
   // Check for 20 memes and stop functionality
   useEffect(() => {
@@ -288,10 +289,11 @@ export default function App() {
             style={{
               left: `${bubble.x}px`,
               top: `${bubble.y}px`,
+              transform: `translate(-50%, -50%) scale(${bubble.size})`,
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" fill="none" stroke="#a2c2db" strokeWidth="1.6" opacity="0.75" />
+              <circle cx="12" cy="12" r="10" fill="none" stroke="#62b0e0" strokeWidth="1.6" opacity="0.75" />
               <circle cx="8" cy="8" r="2.5" fill="white" opacity="0.4" />
               <circle cx="15" cy="10" r="1.2" fill="white" opacity="0.25" />
             </svg>

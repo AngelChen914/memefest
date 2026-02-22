@@ -20,6 +20,7 @@ export default function App() {
   const [draggingCharId, setDraggingCharId] = useState(null);
   const [isStopped, setIsStopped] = useState(false);
   const [showStop, setShowStop] = useState(false);
+  const [sixtySevenActive, setSixtySevenActive] = useState(false)
   
   // Fetch memes from Imgflip API on mount
   useEffect(() => {
@@ -209,6 +210,7 @@ export default function App() {
     charactersRef.current = {};
     setClickCount(0);
     characterIdRef.current = 0;
+    setSixtySevenActive(false);
   };
 
   useEffect(() => {
@@ -345,7 +347,7 @@ export default function App() {
           <div
             className={`card ${clickCount >= 20 ? "disabled" : ""}`}
             onClick={() => {
-              if (memes.length === 0) return; // Don't allow clicking if memes haven't loaded
+              if (memes.length === 0 || sixtySevenActive) return; // Don't allow clicking if memes haven't loaded
               if (isStopped) return; // Can't add more memes when stopped
               setWiggle(true);
               setClickCount((prev) => prev + 1);

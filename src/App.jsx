@@ -7,7 +7,7 @@ import OceanJar from "./components/OceanJar";
 export default function App() {
   const [wiggle, setWiggle] = useState(false);
   const [jarOpening, setJarOpening] = useState(false);
-  const [clickCount, setClickCount] = useState(1);
+  const [clickCount, setClickCount] = useState(0);
   const [memes, setMemes] = useState([]);
   const [bubbles, setBubbles] = useState([]);
   const bubbleIdRef = useRef(0);
@@ -37,13 +37,13 @@ export default function App() {
     const handleMouseMoveGlobal = (e) => {
       // Bubble trail
       const now = Date.now();
-      if (now - lastTime < 30) return;
+      if (now - lastTime < 50) return;
       lastTime = now;
 
       const bubble = {
         id: bubbleIdRef.current++,
         x: e.clientX,
-        y: e.clientY,
+        y: e.clientY + (Math.random() - 0.5) * 50,
       };
       setBubbles((prev) => [...prev, bubble]);
 
@@ -183,7 +183,7 @@ export default function App() {
   const handleReset = () => {
     setActiveCharacters([]);
     charactersRef.current = {};
-    setClickCount(1);
+    setClickCount(0);
     characterIdRef.current = 0;
   };
 
@@ -199,11 +199,11 @@ export default function App() {
           const mx = e.clientX;
           const my = e.clientY;
           if (mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom) {
-            // remove the character and increment the jar count
+            // remove the character and decrement the jar count
             const idToRemove = draggingCharId;
             delete charactersRef.current[idToRemove];
             setActiveCharacters((prev) => prev.filter((c) => c.id !== idToRemove));
-            setClickCount((prev) => prev + 1);
+            setClickCount((prev) => prev - 1);
           }
         }
       } catch (err) {
@@ -246,7 +246,7 @@ export default function App() {
             }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" fill="none" stroke="#b8d8f0" strokeWidth="1.6" opacity="0.75" />
+              <circle cx="12" cy="12" r="10" fill="none" stroke="#a2c2db" strokeWidth="1.6" opacity="0.75" />
               <circle cx="8" cy="8" r="2.5" fill="white" opacity="0.4" />
               <circle cx="15" cy="10" r="1.2" fill="white" opacity="0.25" />
             </svg>
@@ -280,9 +280,14 @@ export default function App() {
         </div>
         <div className="jar-container">
           <div
-            className={`card ${wiggle ? "wiggle" : ""} ${jarOpening ? "opening" : ""}`}
+            className={`card 
+              ${wiggle ? "wiggle" : ""} 
+              ${jarOpening ? "opening" : ""}
+              ${clickCount >= 20 ? "disabled" : ""}`
+            }
             onClick={() => {
               if (memes.length === 0) return; // Don't allow clicking if memes haven't loaded
+              if (clickCount >= 20) return;
               setWiggle(true);
               setJarOpening(true);
               setClickCount((prev) => prev + 1);
@@ -336,7 +341,6 @@ export default function App() {
               bottom: "auto",
               top: `${char.pos.y}px`,
               transform: "translateX(-50%)",
-              cursor: draggingCharId === char.id ? "grabbing" : "grab",
               zIndex: 30,
               opacity: char.isAnimating ? Math.min((Date.now() - char.animationStartTime) / 1200, 1) : 1,
             }}

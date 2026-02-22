@@ -2,8 +2,8 @@ import React from "react";
 
 function OceanJar({ count = 1 }) {
   const getCircledNumber = (num) => {
-    if (num < 1 || num > 20) return "⊕";
-    return String.fromCharCode(0x2460 + (num - 1));
+    if (num < 0) return "⊕";
+    return String(num);
   };
 
   return (
@@ -108,7 +108,7 @@ function OceanJar({ count = 1 }) {
 
         {/* number badge */}
         <circle cx="168" cy="54" r="11" fill="white" stroke="#d0c0b8" strokeWidth="1.4" opacity="0.92" />
-        <text x="168" y="58.5" textAnchor="middle" fontSize="11" fill="#a89888" fontFamily="Georgia, serif">{getCircledNumber(count)}</text>
+        <text x="168.2" y="57" textAnchor="middle" fontSize="11" fill="#a89888" fontFamily="Georgia, serif">{getCircledNumber(count)}</text>
       </svg>
     </div>
   );

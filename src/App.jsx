@@ -6,7 +6,6 @@ import OceanJar from "./components/OceanJar";
 
 export default function App() {
   const [wiggle, setWiggle] = useState(false);
-  const [jarOpening, setJarOpening] = useState(false);
   const [clickCount, setClickCount] = useState(0);
   const [memes, setMemes] = useState([]);
   const [bubbles, setBubbles] = useState([]);
@@ -19,7 +18,8 @@ export default function App() {
   const [dragging, setDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [draggingCharId, setDraggingCharId] = useState(null);
-  const [sixtySevenActive, setSixtySevenActive] = useState(false);
+  const [isStopped, setIsStopped] = useState(false);
+  const [showStop, setShowStop] = useState(false);
   
   // Fetch memes from Imgflip API on mount
   useEffect(() => {
@@ -77,6 +77,17 @@ export default function App() {
     window.addEventListener("mousemove", handleMouseMoveGlobal);
     return () => window.removeEventListener("mousemove", handleMouseMoveGlobal);
   }, [dragging, dragOffset, draggingCharId, activeCharacters]);
+
+  // Check for 20 memes and stop functionality
+  useEffect(() => {
+    if (activeCharacters.length >= 20 && !showStop) {
+      setShowStop(true);
+      setIsStopped(true);
+    } else if (activeCharacters.length < 20 && showStop) {
+      setShowStop(false);
+      setIsStopped(false);
+    }
+  }, [activeCharacters.length, showStop]);
 
   // Physics effect for all active characters
   useEffect(() => {
@@ -188,7 +199,7 @@ export default function App() {
     });
     // If there are many characters, indicate the logo can accept drops
     const logo = document.querySelector('.top-logo');
-    if (logo && activeCharacters.length >= 15) {
+    if (logo) {
       logo.classList.add('trash-target');
     }
   };
@@ -207,7 +218,7 @@ export default function App() {
       // If dropped over logo while there are 15+ active characters, delete the dragged one
       try {
         const logo = document.querySelector('.top-logo');
-        if (logo && activeCharacters.length >= 15 && draggingCharId !== null) {
+        if (logo && draggingCharId !== null) {
           const rect = logo.getBoundingClientRect();
           const mx = e.clientX;
           const my = e.clientY;
@@ -217,6 +228,8 @@ export default function App() {
             delete charactersRef.current[idToRemove];
             setActiveCharacters((prev) => prev.filter((c) => c.id !== idToRemove));
             setClickCount((prev) => prev - 1);
+            setShowStop(false);
+            setIsStopped(false);
           }
         }
       } catch (err) {
@@ -328,25 +341,19 @@ export default function App() {
         <div className="title-block">
           <h1 className="main-title">MemeFest</h1>
         </div>
-        <div className="jar-container">
+        <div className="jar-container" style={{ position: 'relative' }}>
           <div
-            className={`card 
-              ${wiggle ? "wiggle" : ""} 
-              ${jarOpening ? "opening" : ""}
-              ${clickCount >= 20 ? "disabled" : ""}`
-            }
+            className={`card ${clickCount >= 20 ? "disabled" : ""}`}
             onClick={() => {
-              if (memes.length === 0 || sixtySevenActive) return; // Don't allow clicking if memes haven't loaded or overlay is active
-              if (clickCount >= 20) return;
+              if (memes.length === 0) return; // Don't allow clicking if memes haven't loaded
+              if (isStopped) return; // Can't add more memes when stopped
               setWiggle(true);
-              setJarOpening(true);
               setClickCount((prev) => prev + 1);
-              
-              // Pick a random meme from Imgflip
-              const randomMeme = memes[Math.floor(Math.random() * memes.length)];
+
+              const randomMeme =
+                memes[Math.floor(Math.random() * memes.length)];
               const charId = characterIdRef.current++;
-              
-              // Vary the landing X position so memes don't land at the same spot
+
               const positions = [
                 window.innerWidth * 0.25,
                 window.innerWidth * 0.42,
@@ -354,8 +361,10 @@ export default function App() {
                 window.innerWidth * 0.58,
                 window.innerWidth * 0.75
               ];
-              const landingX = positions[Math.floor(Math.random() * positions.length)];
-              
+
+              const landingX =
+                positions[Math.floor(Math.random() * positions.length)];
+
               const newChar = {
                 id: charId,
                 name: randomMeme.name,
@@ -367,16 +376,32 @@ export default function App() {
                 isAnimating: true,
                 animationStartTime: Date.now(),
               };
+
               charactersRef.current[charId] = newChar;
-              setActiveCharacters([...activeCharacters, newChar]);
-              
-              // Close jar after animation (1.5s for cap opening)
-              setTimeout(() => setJarOpening(false), 1500);
+              setActiveCharacters((prev) => [...prev, newChar]);
+
               setTimeout(() => setWiggle(false), 600);
             }}
           >
-            <OceanJar count={clickCount} />
+            <div className={wiggle ? "wiggle" : ""}>
+              <OceanJar count={clickCount} />
+            </div>
           </div>
+          {showStop && (
+            <img
+              src="./images/stop.png"
+              alt="Stop"
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                pointerEvents: 'none',
+                zIndex: 100,
+              }}
+            />
+          )}
           <p className="card-hint">✦ click the jar to peek inside ✦</p>
         </div>
 

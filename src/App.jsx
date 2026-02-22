@@ -175,7 +175,7 @@ export default function App() {
     });
     // If there are many characters, indicate the logo can accept drops
     const logo = document.querySelector('.top-logo');
-    if (logo && activeCharacters.length >= 15) {
+    if (logo) {
       logo.classList.add('trash-target');
     }
   };
@@ -194,7 +194,7 @@ export default function App() {
       // If dropped over logo while there are 15+ active characters, delete the dragged one
       try {
         const logo = document.querySelector('.top-logo');
-        if (logo && activeCharacters.length >= 15 && draggingCharId !== null) {
+        if (logo && draggingCharId !== null) {
           const rect = logo.getBoundingClientRect();
           const mx = e.clientX;
           const my = e.clientY;

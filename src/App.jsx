@@ -19,6 +19,7 @@ export default function App() {
   const [dragging, setDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [draggingCharId, setDraggingCharId] = useState(null);
+  const [sixtySevenActive, setSixtySevenActive] = useState(false);
   
   // Fetch memes from Imgflip API on mount
   useEffect(() => {
@@ -31,6 +32,17 @@ export default function App() {
       })
       .catch((err) => console.error('Failed to fetch memes:', err));
   }, []);
+
+  // Trigger 67 image when count reaches 6
+  useEffect(() => {
+    if (clickCount === 6) {
+      setSixtySevenActive(true);
+      const timer = setTimeout(() => {
+        setSixtySevenActive(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [clickCount]);
 
   useEffect(() => {
     let lastTime = 0;
@@ -51,8 +63,8 @@ export default function App() {
         setBubbles((prev) => prev.filter((b) => b.id !== bubble.id));
       }, 800);
 
-      // Character dragging
-      if (dragging && draggingCharId !== null && charactersRef.current[draggingCharId]) {
+      // Character dragging (disabled during 67 overlay)
+      if (!sixtySevenActive && dragging && draggingCharId !== null && charactersRef.current[draggingCharId]) {
         const newX = e.clientX - dragOffset.x;
         const newY = e.clientY - dragOffset.y;
         const char = charactersRef.current[draggingCharId];
@@ -163,6 +175,7 @@ export default function App() {
   }, [activeCharacters]);
 
   const handleCharacterMouseDown = (charId, e) => {
+    if (sixtySevenActive) return; // Disable dragging during 67 overlay
     setDragging(true);
     setDraggingCharId(charId);
     if (charactersRef.current[charId]) {
@@ -259,6 +272,13 @@ export default function App() {
 
       <Decorations />
 
+      {/* 67 image overlay */}
+      {sixtySevenActive && (
+        <div className="sixty-seven-overlay">
+          <img src="./images/67-sixty-seven.gif" alt="67" className="sixty-seven-image" />
+        </div>
+      )}
+
       {/* seabed - bottom decorations */}
       <Seaweed x={8}  height={70} color="#b8d8c0" delay={0}   />
       <Seaweed x={12} height={55} color="#c8e0b8" delay={1.2} />
@@ -316,7 +336,7 @@ export default function App() {
               ${clickCount >= 20 ? "disabled" : ""}`
             }
             onClick={() => {
-              if (memes.length === 0) return; // Don't allow clicking if memes haven't loaded
+              if (memes.length === 0 || sixtySevenActive) return; // Don't allow clicking if memes haven't loaded or overlay is active
               if (clickCount >= 20) return;
               setWiggle(true);
               setJarOpening(true);

@@ -448,7 +448,6 @@ export default function App() {
               transform: "translateX(-50%)",
               zIndex: 30,
               opacity: char.isAnimating ? Math.min((Date.now() - char.animationStartTime) / 1200, 1) : 1,
-              cursor: expandedChar ? "default" : draggingCharId === char.id ? "grabbing" : "grab",
             }}
             onMouseDown={(e) => handleCharacterMouseDown(char.id, e)}
             onDoubleClick={(e) => handleCharacterDoubleClick(char, e)}

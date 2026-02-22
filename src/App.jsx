@@ -334,14 +334,12 @@ export default function App() {
               if (memes.length === 0) return; // Don't allow clicking if memes haven't loaded
               if (isStopped) return; // Can't add more memes when stopped
               setWiggle(true);
-              setJarOpening(true);
               setClickCount((prev) => prev + 1);
-              
-              // Pick a random meme from Imgflip
-              const randomMeme = memes[Math.floor(Math.random() * memes.length)];
+
+              const randomMeme =
+                memes[Math.floor(Math.random() * memes.length)];
               const charId = characterIdRef.current++;
-              
-              // Vary the landing X position so memes don't land at the same spot
+
               const positions = [
                 window.innerWidth * 0.25,
                 window.innerWidth * 0.42,
@@ -349,8 +347,10 @@ export default function App() {
                 window.innerWidth * 0.58,
                 window.innerWidth * 0.75
               ];
-              const landingX = positions[Math.floor(Math.random() * positions.length)];
-              
+
+              const landingX =
+                positions[Math.floor(Math.random() * positions.length)];
+
               const newChar = {
                 id: charId,
                 name: randomMeme.name,
@@ -362,15 +362,16 @@ export default function App() {
                 isAnimating: true,
                 animationStartTime: Date.now(),
               };
+
               charactersRef.current[charId] = newChar;
-              setActiveCharacters([...activeCharacters, newChar]);
-              
-              // Close jar after animation (1.5s for cap opening)
-              setTimeout(() => setJarOpening(false), 1500);
+              setActiveCharacters((prev) => [...prev, newChar]);
+
               setTimeout(() => setWiggle(false), 600);
             }}
           >
-            <OceanJar count={clickCount} />
+            <div className={wiggle ? "wiggle" : ""}>
+              <OceanJar count={clickCount} />
+            </div>
           </div>
           {showStop && (
             <img

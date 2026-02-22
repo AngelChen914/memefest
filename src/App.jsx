@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, createRef } from "react";
 import Decorations from "./components/Decorations";
 import CoverPage from "./components/CoverPage";
+import MemeExpand from "./components/MemeExpand";
 import "./App.css";
 import { Seaweed, Coral, Shell, Fish, Jellyfish } from "./components/DecorElements";
 import OceanJar from "./components/OceanJar";
@@ -22,7 +23,10 @@ export default function App() {
   const [draggingCharId, setDraggingCharId] = useState(null);
   const [isStopped, setIsStopped] = useState(false);
   const [showStop, setShowStop] = useState(false);
-  const [sixtySevenActive, setSixtySevenActive] = useState(false)
+  const [sixtySevenActive, setSixtySevenActive] = useState(false);
+
+  // Expanded meme state
+  const [expandedChar, setExpandedChar] = useState(null); // { id, name, imageUrl }
   
   // Fetch memes from Imgflip API on mount
   useEffect(() => {
@@ -42,7 +46,7 @@ export default function App() {
       setSixtySevenActive(true);
       const timer = setTimeout(() => {
         setSixtySevenActive(false);
-      }, 3000);
+      }, 5000);
       return () => clearTimeout(timer);
     }
   }, [clickCount]);
@@ -50,7 +54,6 @@ export default function App() {
   useEffect(() => {
     let lastTime = 0;
     const handleMouseMoveGlobal = (e) => {
-      // Bubble trail
       const now = Date.now();
       if (now - lastTime < 50) return;
       lastTime = now;
@@ -66,8 +69,8 @@ export default function App() {
         setBubbles((prev) => prev.filter((b) => b.id !== bubble.id));
       }, 800);
 
-      // Character dragging (disabled during 67 overlay)
-      if (!sixtySevenActive && dragging && draggingCharId !== null && charactersRef.current[draggingCharId]) {
+      // Disable dragging during 67 overlay or expanded view
+      if (!sixtySevenActive && !expandedChar && dragging && draggingCharId !== null && charactersRef.current[draggingCharId]) {
         const newX = e.clientX - dragOffset.x;
         const newY = e.clientY - dragOffset.y;
         const char = charactersRef.current[draggingCharId];
@@ -79,7 +82,7 @@ export default function App() {
 
     window.addEventListener("mousemove", handleMouseMoveGlobal);
     return () => window.removeEventListener("mousemove", handleMouseMoveGlobal);
-  }, [dragging, dragOffset, draggingCharId, activeCharacters]);
+  }, [dragging, dragOffset, draggingCharId, activeCharacters, expandedChar]);
 
   // Check for 20 memes and stop functionality
   useEffect(() => {
@@ -108,18 +111,15 @@ export default function App() {
       characters.forEach((char) => {
         if (char.isDragging) return;
 
-        // Handle pop-out animation
         if (char.isAnimating) {
           const elapsed = Date.now() - char.animationStartTime;
-          const duration = 1200; // 1.2 seconds for pop-out animation
+          const duration = 1200;
           const progress = Math.min(elapsed / duration, 1);
           
-          // Animate Y position from -150 to landing Y (bottom area)
           const startY = -150;
           const endY = window.innerHeight - 180;
           char.pos.y = startY + (endY - startY) * progress;
           
-          // End animation and start physics when complete
           if (progress >= 1) {
             char.isAnimating = false;
             char.pos.y = endY;
@@ -131,7 +131,6 @@ export default function App() {
           char.vel.x *= friction;
           char.vel.y *= friction;
 
-          // Boundaries
           const minX = 50;
           const maxX = window.innerWidth - 50;
           const maxY = window.innerHeight - 180;
@@ -140,7 +139,6 @@ export default function App() {
             char.pos.y = maxY;
             char.vel.y = 0;
           }
-
           if (char.pos.x < minX) {
             char.pos.x = minX;
             char.vel.x *= -bounce;
@@ -153,7 +151,7 @@ export default function App() {
         updated = true;
       });
 
-      // Collision detection - prevent characters from stacking
+      // Collision detection
       const minDistance = 80;
       for (let i = 0; i < characters.length; i++) {
         for (let j = i + 1; j < characters.length; j++) {
@@ -167,11 +165,8 @@ export default function App() {
             const angle = Math.atan2(dy, dx);
             const overlap = minDistance - distance;
             const pushForce = overlap / 5;
-
-            // Push characters apart horizontally
             char1.pos.x -= Math.cos(angle) * pushForce;
             char2.pos.x += Math.cos(angle) * pushForce;
-
             updated = true;
           }
         }
@@ -189,7 +184,7 @@ export default function App() {
   }, [activeCharacters]);
 
   const handleCharacterMouseDown = (charId, e) => {
-    if (sixtySevenActive) return; // Disable dragging during 67 overlay
+    if (sixtySevenActive || expandedChar) return;
     setDragging(true);
     setDraggingCharId(charId);
     if (charactersRef.current[charId]) {
@@ -200,11 +195,22 @@ export default function App() {
       x: e.clientX - (rect?.left || 0),
       y: e.clientY - (rect?.top || 0),
     });
-    // If there are many characters, indicate the logo can accept drops
     const logo = document.querySelector('.top-logo');
-    if (logo) {
-      logo.classList.add('trash-target');
+    if (logo) logo.classList.add('trash-target');
+  };
+
+  const handleCharacterDoubleClick = (char, e) => {
+    e.stopPropagation();
+    // Cancel any drag that started on the first click
+    setDragging(false);
+    if (charactersRef.current[char.id]) {
+      charactersRef.current[char.id].isDragging = false;
     }
+    setDraggingCharId(null);
+    const logo = document.querySelector('.top-logo');
+    if (logo) logo.classList.remove('trash-target');
+
+    setExpandedChar({ id: char.id, name: char.name, imageUrl: char.imageUrl });
   };
 
   const handleReset = () => {
@@ -213,6 +219,7 @@ export default function App() {
     setClickCount(0);
     characterIdRef.current = 0;
     setSixtySevenActive(false);
+    setExpandedChar(null);
   };
 
   const handleHome = () => {
@@ -224,7 +231,6 @@ export default function App() {
     const handleMouseUp = (e) => {
       if (!dragging) return;
 
-      // If dropped over logo while there are 15+ active characters, delete the dragged one
       try {
         const logo = document.querySelector('.top-logo');
         if (logo && draggingCharId !== null) {
@@ -232,7 +238,6 @@ export default function App() {
           const mx = e.clientX;
           const my = e.clientY;
           if (mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom) {
-            // remove the character and decrement the jar count
             const idToRemove = draggingCharId;
             delete charactersRef.current[idToRemove];
             setActiveCharacters((prev) => prev.filter((c) => c.id !== idToRemove));
@@ -245,7 +250,6 @@ export default function App() {
         // ignore
       }
 
-      // cleanup drag state
       setDragging(false);
       if (charactersRef.current[draggingCharId]) {
         charactersRef.current[draggingCharId].isDragging = false;
@@ -253,7 +257,6 @@ export default function App() {
       }
       setDraggingCharId(null);
 
-      // remove visual indicator on logo
       const logo = document.querySelector('.top-logo');
       if (logo) logo.classList.remove('trash-target');
     };
@@ -262,21 +265,26 @@ export default function App() {
     return () => window.removeEventListener('mouseup', handleMouseUp);
   }, [dragging, draggingCharId, activeCharacters]);
 
-  // If on cover screen, show cover page
+  // Close expanded view on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setExpandedChar(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   if (currentScreen === 'cover') {
     return <CoverPage onPlayClick={() => setCurrentScreen('game')} />;
   }
 
-  // Otherwise show game screen
   return (
     <div className="page">
       <div className="paper-texture" />
 
-      {/* home and reset buttons */}
       <button className="home-button" onClick={handleHome}>Home</button>
       <button className="reset-top" onClick={handleReset}>Reset</button>
 
-      {/* logo */}
       <img src="./images/logo.png" alt="logo" className="top-logo" />
 
       {/* bubble trail */}
@@ -285,10 +293,7 @@ export default function App() {
           <div
             key={bubble.id}
             className="bubble-trail"
-            style={{
-              left: `${bubble.x}px`,
-              top: `${bubble.y}px`,
-            }}
+            style={{ left: `${bubble.x}px`, top: `${bubble.y}px` }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10" fill="none" stroke="#a2c2db" strokeWidth="1.6" opacity="0.75" />
@@ -308,7 +313,10 @@ export default function App() {
         </div>
       )}
 
-      {/* seabed - bottom decorations */}
+      {/* expanded meme overlay */}
+      <MemeExpand char={expandedChar} onClose={() => setExpandedChar(null)} />
+
+      {/* seabed */}
       <Seaweed x={8}  height={70} color="#b8d8c0" delay={0}   />
       <Seaweed x={12} height={55} color="#c8e0b8" delay={1.2} />
       <Seaweed x={22} height={75} color="#b8d8c0" delay={0.8} />
@@ -335,7 +343,7 @@ export default function App() {
       <Shell x={74} color="#f7d0d8" />
       <Shell x={86} color="#f7e6b8" />
 
-      {/* swimmers - upper middle area */}
+      {/* swimmers */}
       <Fish x={6}  y={28} flipped={false} color="#c8d8f0" size={0.85} delay={0}   />
       <Fish x={20} y={35} flipped={true}  color="#f0d0c8" size={0.75} delay={2.5} />
       <Fish x={38} y={22} flipped={false} color="#e0d0f4" size={0.8}  delay={1.2} />
@@ -361,28 +369,12 @@ export default function App() {
           <div
             className={`card ${clickCount >= 20 ? "disabled" : ""}`}
             onClick={() => {
-              if (memes.length === 0 || sixtySevenActive) return; // Don't allow clicking if memes haven't loaded
-              if (isStopped) return; // Can't add more memes when stopped
+              if (memes.length === 0 || sixtySevenActive) return;
+              if (isStopped) return;
               setWiggle(true);
               setClickCount((prev) => prev + 1);
 
-              // pick a meme that isn't already active to avoid duplicates
-              const usedIds = new Set(
-                Object.values(charactersRef.current)
-                  .map((c) => c.memeId)
-                  .filter(Boolean)
-              );
-              const availableMemes = memes.filter(
-                (m) => !usedIds.has(typeof m.id === "number" ? m.id : parseInt(m.id, 10))
-              );
-              if (availableMemes.length === 0) {
-                // no unused memes left — show stop overlay and prevent adding
-                setIsStopped(true);
-                setShowStop(true);
-                return;
-              }
-              const randomMeme =
-                availableMemes[Math.floor(Math.random() * availableMemes.length)];
+              const randomMeme = memes[Math.floor(Math.random() * memes.length)];
               const charId = characterIdRef.current++;
 
               const positions = [
@@ -390,15 +382,12 @@ export default function App() {
                 window.innerWidth * 0.42,
                 window.innerWidth * 0.5,
                 window.innerWidth * 0.58,
-                window.innerWidth * 0.75
+                window.innerWidth * 0.75,
               ];
-
-              const landingX =
-                positions[Math.floor(Math.random() * positions.length)];
+              const landingX = positions[Math.floor(Math.random() * positions.length)];
 
               const newChar = {
                 id: charId,
-                memeId: typeof randomMeme.id === "number" ? randomMeme.id : parseInt(randomMeme.id, 10),
                 name: randomMeme.name,
                 imageUrl: randomMeme.url,
                 pos: { x: landingX, y: -150 },
@@ -450,13 +439,14 @@ export default function App() {
             style={{
               position: "fixed",
               left: `${char.pos.x}px`,
-              bottom: "auto",
               top: `${char.pos.y}px`,
               transform: "translateX(-50%)",
               zIndex: 30,
               opacity: char.isAnimating ? Math.min((Date.now() - char.animationStartTime) / 1200, 1) : 1,
+              cursor: expandedChar ? "default" : draggingCharId === char.id ? "grabbing" : "grab",
             }}
             onMouseDown={(e) => handleCharacterMouseDown(char.id, e)}
+            onDoubleClick={(e) => handleCharacterDoubleClick(char, e)}
           >
             <img
               src={char.imageUrl}

@@ -366,8 +366,23 @@ export default function App() {
               setWiggle(true);
               setClickCount((prev) => prev + 1);
 
+              // pick a meme that isn't already active to avoid duplicates
+              const usedIds = new Set(
+                Object.values(charactersRef.current)
+                  .map((c) => c.memeId)
+                  .filter(Boolean)
+              );
+              const availableMemes = memes.filter(
+                (m) => !usedIds.has(typeof m.id === "number" ? m.id : parseInt(m.id, 10))
+              );
+              if (availableMemes.length === 0) {
+                // no unused memes left — show stop overlay and prevent adding
+                setIsStopped(true);
+                setShowStop(true);
+                return;
+              }
               const randomMeme =
-                memes[Math.floor(Math.random() * memes.length)];
+                availableMemes[Math.floor(Math.random() * availableMemes.length)];
               const charId = characterIdRef.current++;
 
               const positions = [
@@ -383,6 +398,7 @@ export default function App() {
 
               const newChar = {
                 id: charId,
+                memeId: typeof randomMeme.id === "number" ? randomMeme.id : parseInt(randomMeme.id, 10),
                 name: randomMeme.name,
                 imageUrl: randomMeme.url,
                 pos: { x: landingX, y: -150 },

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, createRef } from "react";
-import Decorations from "./Decorations";
+import Decorations from "./components/Decorations";
 import CoverPage from "./components/CoverPage";
 import "./App.css";
 import { Seaweed, Coral, Shell, Fish, Jellyfish } from "./components/DecorElements";
@@ -42,7 +42,7 @@ export default function App() {
       setSixtySevenActive(true);
       const timer = setTimeout(() => {
         setSixtySevenActive(false);
-      }, 5000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [clickCount]);

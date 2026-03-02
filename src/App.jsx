@@ -134,7 +134,7 @@ export default function App() {
 
           const minX = 50;
           const maxX = window.innerWidth - 50;
-          const maxY = window.innerHeight - 180;
+          const maxY = window.innerHeight - 120 / char.aspectRatio;
 
           if (char.pos.y > maxY) {
             char.pos.y = maxY;
@@ -396,6 +396,7 @@ export default function App() {
                 name: randomMeme.name,
                 imageUrl: randomMeme.url,
                 pos: { x: landingX, y: -150 },
+                aspectRatio: randomMeme.width / randomMeme.height,
                 vel: { x: 0, y: 0 },
                 ref: createRef(),
                 isDragging: false,
